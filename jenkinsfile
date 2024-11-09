@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'ddd'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/ImpanaD142/deveops-stduent-management-.git', branch: 'main'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Verify Python and pip versions
+                    bat 'C:\\Users\\abhin\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe --version'
+                    bat 'C:\\Users\\abhin\\AppData\\Local\\Microsoft\\WindowsApps\\pip.exe --version'
+
+                    // Install dependencies
+                    bat 'C:\\Users\\abhin\\AppData\\Roaming\\Python\\Python312\\Scripts\\pip.exe install -r requirements.txt'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    bat "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    bat "docker run -d -p 5009:5001 ${DOCKER_IMAGE}"
+                }
+            }
+        }
+
+        stage('Deploy Image') {
+            steps {
+                script {
+                    // Use Jenkins credentials for Docker Hub login
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'impanaimpu142', passwordVariable: 'impanaimp142')]) {
+                        bat "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+
+                        // Push the image
+                        bat "docker tag ${DOCKER_IMAGE}:latest ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest"
+                        bat "docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest"
+                    }
+                }
+            }
+        }
+    }
+}
