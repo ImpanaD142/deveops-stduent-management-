@@ -10,7 +10,7 @@ COPY . /app
 #install Flask inside the container
 RUN pip install Flask flask_sqlalchemy
 
-EXPOSE 5001
+EXPOSE 5000 
 
 #tell docker what command to run the container
 CMD ["python","app.py"] 
